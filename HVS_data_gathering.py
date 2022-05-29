@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-import astropy
 import astropy.coordinates as coord
 import astropy.units as u
 from astropy.wcs import WCS
@@ -90,13 +89,10 @@ def remove_digits(string):
     return string.translate(table)
 
 
-# def tbl_ext(table, key):
-#     """
-#     Extract value (with unit) from an astropy table or row
-#     """
-#     if table[key].unit is None:
-#         return table[key].data[0]
-#     return table[key].data[0] * table[key].unit
+def sigfig(num):
+    if type(num) == u.quantity.Quantity:
+        return np.float64('{:0.3g}'.format(num.value)) * num.unit
+    return np.float64('{:0.3g}'.format(num))
 
 
 # ------------------------------------------------------------------------------
@@ -123,7 +119,7 @@ def dist_from_parallax(parallax, parallax_error):
     dist = (1*u.pc*u.arcsec/parallax.to(u.arcsec)).to(u.kpc)
     dist_err = (1*u.pc*u.arcsec/parallax.to(u.arcsec)**2 * parallax_error.to(u.arcsec)).to(u.kpc)
     print(f"Estimated distance from parallax = {dist.value:.2e} +/- {dist_err:.2e}\n\n")
-    return dist, dist_err
+    return sigfig(dist), sigfig(dist_err)
 
 
 # ------------------------------------------------------------------------------
@@ -150,12 +146,6 @@ def rv_from_sdss_spec(star_coords):
     star_dat = sp[closest][1].data
     star_wavelens = 10**star_dat['loglam']  # * u.Angstrom
     star_flux = star_dat['flux']  # * 1e-17 * u.erg / u.cm**2 / u.s / u.Angstrom
-
-    # dlambda = np.median(np.diff(star_wavelens))
-    # print(dlambda)
-
-    # star_flux = star_flux[star_wavelens < 7200]
-    # star_wavelens = star_wavelens[star_wavelens < 7200]
 
     star_continuum = rolling_quant(star_wavelens, star_flux, 100, lambda x: np.percentile(x, 90))
     star_normed = star_flux/star_continuum
@@ -187,11 +177,11 @@ def rv_from_sdss_spec(star_coords):
 
     RV = shifts[np.argmax(XCs)]
 
-    SN = np.median((spec_hdr['SN_G'], spec_hdr['SN_I'], spec_hdr['SN_R']))
-    sig_RV = 500/SN*u.m/u.s
+    dlambda = np.median(np.diff(star_wavelens))*u.angstrom
+    sig_RV = ((3e18*u.angstrom/u.s/6563/u.angstrom)**2*dlambda**2)**0.5
 
     print(f"Spectrum inferred radial velocity:",\
-          f"RV = {RV.value:.2e} +/- {sig_RV.to(u.km/u.s):.2e}\n")
+          f"RV = {RV.value:.3g} +/- {sig_RV.to(u.km/u.s):.3g}\n")
 
     fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, figsize=(12,17))
     ax1.plot(shifts, XCs)
@@ -214,10 +204,10 @@ def rv_from_sdss_spec(star_coords):
     ax3.set_ylabel('flux', size=16)
     ax3.legend()
     plt.tight_layout()
-    plt.savefig(f"{star_coords.ra.value:.2f}_{star_coords.dec.value:.2f}.pdf")
+    plt.savefig(f"rv_fits/{star_coords.ra.value:.2f}_{star_coords.dec.value:.2f}.pdf")
     plt.close()
 
-    return RV, sig_RV, spec_type, found_pos[closest].ra.to(u.deg), found_pos[closest].dec.to(u.deg), xid[closest]['plate'], xid[closest]['fiberID'], xid[closest]['specobjid']
+    return sigfig(RV), sigfig(sig_RV), spec_type, found_pos[closest].ra.to(u.deg), found_pos[closest].dec.to(u.deg), xid[closest]['plate'], xid[closest]['fiberID'], xid[closest]['specobjid']
 
 
 if __name__ == "__main__":
@@ -244,7 +234,7 @@ if __name__ == "__main__":
         ["SDSS J013655.91+242546.0", 24.23295833, 24.42944444]
     ]
 
-    HVSs = pd.DataFrame(columns=["name", "query_ra", "query_dec", "RV", "RV_unc", "spec_type", "sdss_ra", "sdss_dec", "plate", "fiberid", "specobjid", "gaia_sourceid", "parallax", "parallax_error", "gaia_ra", "gaia_dec", "pmra", "pmra_error", "pmdec", "pmdec_error", "dist", "dist_err"])
+    HVSs = pd.DataFrame(columns=["name", "query_ra", "query_dec", "rv", "rv_unc", "spec_type", "sdss_ra", "sdss_dec", "plate", "fiberid", "specobjid", "gaia_sourceid", "parallax", "parallax_unc", "gaia_ra", "gaia_dec", "pmra", "pmra_unc", "pmdec", "pmdec_unc", "dist", "dist_unc"])
 
     for match in matches:
         name, ra, dec = match
