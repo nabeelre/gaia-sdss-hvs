@@ -230,8 +230,7 @@ if __name__ == "__main__":
         ["Hivel500", 224.6887569, 4.45115226 ],
         ["Hivel563", 168.2815741, 48.02222718],
         ["Hivel567", 258.8817557, 27.2626295],
-        ["Hivel588", 210.7395489, 37.80888577],
-        ["SDSS J013655.91+242546.0", 24.23295833, 24.42944444]
+        ["Hivel588", 210.7395489, 37.80888577]
     ]
 
     HVSs = pd.DataFrame(columns=["name", "query_ra", "query_dec", "rv", "rv_unc", "spec_type", "sdss_ra", "sdss_dec", "plate", "fiberid", "specobjid", "gaia_sourceid", "parallax", "parallax_unc", "gaia_ra", "gaia_dec", "pmra", "pmra_unc", "pmdec", "pmdec_unc", "dist", "dist_unc"])
@@ -254,27 +253,6 @@ if __name__ == "__main__":
     #     gaia_sourceid, parallax, parallax_error, gaia_ra, gaia_dec, pmra, pmra_error, pmdec, pmdec_error = pms_parallax_from_gaia(star_coords)
     #     dist, dist_err = dist_from_parallax(parallax, parallax_error)
     #     HVSs.loc[len(HVSs.index)] = [name, ra, dec, RV, sig_RV, spec_type, sdss_ra, sdss_dec, plate, fiberid, specobjid, gaia_sourceid, parallax, parallax_error, gaia_ra, gaia_dec, pmra, pmra_error, pmdec, pmdec_error, dist, dist_err]
-
-    # Find matches in SDSS HVS list
-    # names = [
-    #     "SDSS J013655.91+242546.0",
-    #     "SDSS J090745.0+024507",     # no sdss matches
-    #     "SDSS J091301.00+305120.0",
-    #     "SDSS J091759.42+672238.7",  # no sdss matches
-    #     "SDSS J110557.45+093439.5",  # no sdss matches
-    #     "SDSS J113312.12+010824.9",
-    #     "SDSS J094214.04+200322.1",  # no sdss matches
-    #     "SDSS J102137.08-005234.8",  # no sdss matches
-    #     "SDSS J120337.85+180250.4"
-    # ]
     
-    # for name in names:
-    #     RA, Dec = extract_coords(name)
-    #     star_coords = coord.SkyCoord(ra=RA, dec=Dec, frame='icrs')
-    #     RV, sig_RV, spec_type, sdss_ra, sdss_dec, plate, fiberid, specobjid = rv_from_sdss_spec(star_coords)
-    #     gaia_sourceid, parallax, parallax_error, gaia_ra, gaia_dec, pmra, pmra_error, pmdec, pmdec_error = pms_parallax_from_gaia(star_coords)
-    #     dist, dist_err = dist_from_parallax(parallax, parallax_error)
-    #     HVSs.loc[len(HVSs.index)] = [name, RA, Dec, RV, sig_RV, spec_type, sdss_ra, sdss_dec, plate, fiberid, specobjid, gaia_sourceid, parallax, parallax_error, gaia_ra, gaia_dec, pmra, pmra_error, pmdec, pmdec_error, dist, dist_err]
-
     # df[df['parallax'] > df['parallax_error']*5]
     # df[~df['RV'].isna()]
