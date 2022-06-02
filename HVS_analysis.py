@@ -268,7 +268,7 @@ if __name__ == "__main__":
     ax.set_ylim([200,800])
 
     ax.set_xlabel(r"Galactocentric radius [kpc]")
-    ax.set_ylabel(r"$v_{\mathrm{esc}}$ [km s$^{-1}$]")
+    ax.set_ylabel(r"$v_{\mathrm{3D}}$ [km s$^{-1}$]")
 
     ax.tick_params(axis='y', which='major', direction='out', length=6, width=3, left=True, labelsize='medium', pad=10)
     ax.tick_params(axis='y', which='minor', direction='out', length=3, width=3, left=True, labelsize='medium', pad=10)
