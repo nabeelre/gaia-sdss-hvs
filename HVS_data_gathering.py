@@ -209,10 +209,10 @@ def rv_from_sdss_spec(star_coords, name):
     ax2.plot(tmpl_wavelens, tmpl_normed, c='red', label='A-type star template', linewidth=2.5, alpha=1)
     ax2.plot(doppler_shift(tmpl_wavelens, RV), tmpl_normed, c='blue', label='Shifted tempalte', linewidth=2.5, alpha=1, zorder=3)
 
-    ax2.xaxis.set_major_locator(MultipleLocator(100))
+    ax2.xaxis.set_major_locator(MultipleLocator(50))
     ax2.xaxis.set_minor_locator(MultipleLocator(25))
     ax2.yaxis.set_minor_locator(MultipleLocator(0.125))
-    ax2.yaxis.set_major_locator(MultipleLocator(0.5))
+    ax2.yaxis.set_major_locator(MultipleLocator(0.25))
 
     ax2.tick_params(axis='both', which='major', direction='out', length=6, width=3, left=True, labelsize='medium', pad=10)
     ax2.tick_params(axis='both', which='minor', direction='out', length=3, width=3, left=True, labelsize='medium', pad=10)
