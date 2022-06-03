@@ -1,6 +1,7 @@
 #!usr/bin/python
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import (MultipleLocator, AutoMinorLocator)
 import pandas as pd
 
 import astropy.coordinates as coord
@@ -16,6 +17,12 @@ warnings.filterwarnings("ignore", category=AstropyWarning)
 
 BOLD = "\033[1m"
 END  = "\033[0m"
+
+plt.rcParams.update({
+    "font.family": "serif",
+    "font.size": 28,
+})
+plt.rcParams['axes.linewidth'] = 3
 
 
 # Cross correlation helper functions
@@ -124,7 +131,7 @@ def dist_from_parallax(parallax, parallax_error):
 
 # ------------------------------------------------------------------------------
 # SDSS query (spectrum) and analysis (RV estimation) functions
-def rv_from_sdss_spec(star_coords):
+def rv_from_sdss_spec(star_coords, name):
     search_radius = 1*u.arcsec
     xid = SDSS.query_region(star_coords, spectro=True, radius=search_radius)
 
@@ -183,28 +190,40 @@ def rv_from_sdss_spec(star_coords):
     print(f"Spectrum inferred radial velocity:",\
           f"RV = {RV.value:.3g} +/- {sig_RV.to(u.km/u.s):.3g}\n")
 
-    fig, (ax1, ax2, ax3) = plt.subplots(nrows=3, ncols=1, figsize=(12,17))
-    ax1.plot(shifts, XCs)
-    ax1.axvline(RV.value)
-    ax1.set_title("Cross correlation", size=18)
-    ax1.set_xlabel('doppler shift [km/s]', size=16)
-    ax1.set_ylabel('XC', size=16)
+    fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(13,10))
+    ax1.plot(shifts, XCs, c='k', linewidth=3)
+    ax1.axvline(RV.value, c='k', linewidth=2, linestyle='dashed', label=fr'RV={RV.value:.1f}$\pm${sig_RV.to(u.km/u.s):.2f}')
+    ax1.set_xlabel('Shift [km/s]')
+    ax1.set_ylabel('Cross correlation')
+    ax1.legend(frameon=False, loc='upper right', prop={'size': 22})
 
-    ax2.plot(star_wavelens, star_normed, c='orange', label='star')
-    ax2.plot(tmpl_wavelens, tmpl_normed, c='green', label='tempalte')
-    ax2.set_title("without shift", size=18)
-    ax2.set_xlabel('wavelength [angstrom]', size=16)
-    ax2.set_ylabel('flux', size=16)
-    ax2.legend()
+    ax1.xaxis.set_major_locator(MultipleLocator(500))
+    ax1.xaxis.set_minor_locator(MultipleLocator(100))
+    ax1.yaxis.set_minor_locator(MultipleLocator(1))
+    ax1.yaxis.set_major_locator(MultipleLocator(2))
 
-    ax3.plot(star_wavelens, star_normed, c='orange', label='star')
-    ax3.plot(doppler_shift(tmpl_wavelens, RV), tmpl_normed, c='green', label='tempalte')
-    ax3.set_title("with shift", size=18)
-    ax3.set_xlabel('wavelength [angstrom]', size=16)
-    ax3.set_ylabel('flux', size=16)
-    ax3.legend()
+    ax1.tick_params(axis='both', which='major', direction='out', length=6, width=3, left=True, labelsize='medium', pad=10)
+    ax1.tick_params(axis='both', which='minor', direction='out', length=3, width=3, left=True, labelsize='medium', pad=10)
+
+    ax2.plot(star_wavelens, star_normed, c='k', label='Observed spectrum', linewidth=2.5)
+    ax2.plot(tmpl_wavelens, tmpl_normed, c='red', label='A-type star template', linewidth=2.5, alpha=1)
+    ax2.plot(doppler_shift(tmpl_wavelens, RV), tmpl_normed, c='blue', label='Shifted tempalte', linewidth=2.5, alpha=1, zorder=3)
+
+    ax2.xaxis.set_major_locator(MultipleLocator(100))
+    ax2.xaxis.set_minor_locator(MultipleLocator(25))
+    ax2.yaxis.set_minor_locator(MultipleLocator(0.125))
+    ax2.yaxis.set_major_locator(MultipleLocator(0.5))
+
+    ax2.tick_params(axis='both', which='major', direction='out', length=6, width=3, left=True, labelsize='medium', pad=10)
+    ax2.tick_params(axis='both', which='minor', direction='out', length=3, width=3, left=True, labelsize='medium', pad=10)
+
+    ax2.set_xlabel(r'Wavelength [$\AA$]')
+    ax2.set_ylabel('Normalized flux')
+    ax2.set_xlim([6500,6670])
+    ax2.set_ylim([0.5,1.1])
+    ax2.legend(frameon=False, loc='lower right', prop={'size': 22})
     plt.tight_layout()
-    plt.savefig(f"rv_fits/{star_coords.ra.value:.2f}_{star_coords.dec.value:.2f}.pdf")
+    plt.savefig(f"rv_fits/{name}.pdf")
     plt.close()
 
     return sigfig(RV), sigfig(sig_RV), spec_type, found_pos[closest].ra.to(u.deg), found_pos[closest].dec.to(u.deg), xid[closest]['plate'], xid[closest]['fiberID'], xid[closest]['specobjid']
@@ -238,7 +257,7 @@ if __name__ == "__main__":
     for match in matches:
         name, ra, dec = match
         star_coords = coord.SkyCoord(ra=ra*u.deg, dec=dec*u.deg, frame='icrs')
-        RV, sig_RV, spec_type, sdss_ra, sdss_dec, plate, fiberid, specobjid = rv_from_sdss_spec(star_coords)
+        RV, sig_RV, spec_type, sdss_ra, sdss_dec, plate, fiberid, specobjid = rv_from_sdss_spec(star_coords, name)
         gaia_sourceid, parallax, parallax_error, gaia_ra, gaia_dec, pmra, pmra_error, pmdec, pmdec_error = pms_parallax_from_gaia(star_coords)
         dist, dist_err = dist_from_parallax(parallax, parallax_error)
         HVSs.loc[len(HVSs.index)] = [name, ra, dec, RV, sig_RV, spec_type, sdss_ra, sdss_dec, plate, fiberid, specobjid, gaia_sourceid, parallax, parallax_error, gaia_ra, gaia_dec, pmra, pmra_error, pmdec, pmdec_error, dist, dist_err]
