@@ -94,7 +94,7 @@ def plot_orbit(pos, axs, cmap, alpha):
 
 
 def plot_integration(star_samples, name, forward_orbit_samples, reverse_orbit_samples):
-    fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(25,9), sharey=True)
+    fig, (ax1, ax2, ax3) = plt.subplots(nrows=1, ncols=3, figsize=(29,9), sharey=True)
 
     for i, star in enumerate(star_samples):
         alpha = 1 if i == 0 else 0.05
@@ -208,7 +208,7 @@ if __name__ == "__main__":
         reverse_orbit_samples = potential.integrate_orbit(w0_samples, dt=-0.25*u.Myr, n_steps=4000)
 
         plot_integration(star_samples, name, forward_orbit_samples, reverse_orbit_samples)
-        plt.savefig(f"orbit_figs/{name}.pdf", bbox_inches='tight')
+        plt.savefig(f"orbit_figs/{name}_orbit.pdf", bbox_inches='tight')
         plt.close()
         
         print(f"Finished {name} orbit plot")
