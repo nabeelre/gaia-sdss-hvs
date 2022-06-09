@@ -192,7 +192,7 @@ def rv_from_sdss_spec(star_coords, name):
 
     fig, (ax1, ax2) = plt.subplots(nrows=2, ncols=1, figsize=(13,10))
     ax1.plot(shifts, XCs, c='k', linewidth=3)
-    ax1.axvline(RV.value, c='k', linewidth=2, linestyle='dashed', label=fr'RV={RV.value:.1f}$\pm${sig_RV.to(u.km/u.s):.2f}')
+    ax1.axvline(RV.value, c='k', linewidth=2, linestyle='dashed', label=fr"$v_l$$_o$$_s$={RV.value:.1f}$\pm${sig_RV.to(u.km/u.s):.2f}")
     ax1.set_xlabel('Shift [km/s]')
     ax1.set_ylabel('Cross correlation')
     ax1.legend(frameon=False, loc='upper right', prop={'size': 22})
